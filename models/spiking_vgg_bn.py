@@ -1,7 +1,6 @@
 import torch.nn as nn
 from spikingjelly.clock_driven import layer
 import torch
-import pandas as pd
 
 __all__ = [
     'SpikingVGGBN', 'spiking_vgg11_bn', 'spiking_vgg13_bn', 'spiking_vgg16_bn', 'spiking_vgg19_bn'

@@ -176,10 +176,10 @@ def vggsnn(neuron: callable = None, num_classes=10, neuron_dropout=0.0, **kwargs
 
 if __name__ == '__main__':
     # model = VGGSNNwoAP()
-    from modules.neuron import ComplementaryLIFNeuron
+    from modules.neuron import InhibitoryLIFNeuron
     from thop import profile
 
-    model = snn5_noAP(neuron=ComplementaryLIFNeuron)
+    model = snn5_noAP(neuron=InhibitoryLIFNeuron)
     input = torch.randn(1, 3, 32, 32)
     flops, params = profile(model, inputs=(input,))
     print(model)

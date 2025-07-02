@@ -1,8 +1,6 @@
 import torch.nn as nn
 from spikingjelly.clock_driven import layer
 import torch
-import pandas as pd
-import os
 
 __all__ = [
     'PreActResNet', 'spiking_resnet18', 'spiking_resnet34', 'spiking_resnet50', 'spiking_resnet101', 'spiking_resnet152'
@@ -15,8 +13,6 @@ class PreActBlock(nn.Module):
 
     def __init__(self, in_channels, out_channels, stride, dropout, neuron: callable = None, **kwargs):
         super(PreActBlock, self).__init__()
-        self.in_channels = in_channels
-        self.out_channels = out_channels
         whether_bias = True
         self.bn1 = nn.BatchNorm2d(in_channels)
 
@@ -91,8 +87,6 @@ class PreActResNet(nn.Module):
 
     def __init__(self, block, num_blocks, num_classes, dropout, neuron: callable = None, **kwargs):
         super(PreActResNet, self).__init__()
-        self.num_blocks = num_blocks
-
         self.data_channels = kwargs.get('c_in', 3)
         self.init_channels = 64
         self.conv1 = nn.Conv2d(self.data_channels, 64, kernel_size=3, stride=1, padding=1, bias=False)
@@ -105,11 +99,9 @@ class PreActResNet(nn.Module):
         self.pool = nn.AvgPool2d(4)
         self.flat = nn.Flatten()
         self.drop = layer.Dropout(dropout)
-        self.linear = nn.Linear(512 * 16, num_classes)
+        self.linear = nn.Linear(512 * block.expansion, num_classes)
 
         self.relu1 = neuron(**kwargs)
-
-        self.pool_c = nn.AvgPool2d(4)
 
 
         for m in self.modules():

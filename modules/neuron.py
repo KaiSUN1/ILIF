@@ -21,48 +21,46 @@ class ILIFSpike(nn.Module):
 
     def forward(self, x_seq):
         # x_seq.shape should be [T, N, *]
-        _spike = []
-        u = 0
-        m = 0
+        spike_sequence = []
+        voltage = 0
+        memory = 0
         T = x_seq.shape[0]
         for t in range(T):
-            u = self.gamma * u + x_seq[t, ...]
-            spike = self.spike_func(u - self.v_th)
-            _spike.append(spike)
-            m = m * torch.sigmoid_((1. - self.gamma) * u) + spike
-            u = u - spike * (self.v_th + torch.sigmoid_(m))
+            voltage = self.gamma * voltage + x_seq[t, ...]
+            spike = self.spike_func(voltage - self.v_th)
+            spike_sequence.append(spike)
+            memory = memory * torch.sigmoid_((1. - self.gamma) * voltage) + spike
+            voltage = voltage - spike * (self.v_th + torch.sigmoid_(memory))
         # self.pre_spike_mem = torch.stack(_mem)
-        return torch.stack(_spike, dim=0)
+        return torch.stack(spike_sequence, dim=0)
 
 
 # spikingjelly single step version
-class ComplementaryLIFNeuron(LIFNode_sj):
+class InhibitoryLIFNeuron(LIFNode_sj):
     def __init__(self, tau: float = 2.,
                  decay_input: bool = False, v_threshold: float = 1.,
                  v_reset: float = None, surrogate_function: Callable = Rectangle(),
                  detach_reset: bool = False, cupy_fp32_inference=False, **kwargs):
         super().__init__(tau, decay_input, v_threshold, v_reset, surrogate_function, detach_reset, cupy_fp32_inference)
-        self.register_memory('vot', 0.)  # Complementary memory
-        self.register_memory('cur', 0.)
-        self.register_memory('sp1', 0.)
-        self.register_memory('sp2', 0.)
-        self.register_memory('votage', 0.)
-        self.register_memory('m', 0.)
+        self.register_memory('inhibitory_memory', 0.)  # Inhibitory memory
+        self.register_memory('prev_input', 0.)
+        self.register_memory('prev_spike', 0.)
+        self.register_memory('inhibition', 0.)
 
     def forward(self, x: torch.Tensor):
-        if isinstance(self.sp1, float):
-            self.sp1 = torch.zeros_like(x)
-            self.sp2 = torch.zeros_like(x)
-            self.m = torch.zeros_like(x)
-        y = x
-        self.m = 0.03*(self.m + self.sp1 * self.sp2)
-        self.neuronal_charge(x-torch.clamp(self.m,min=0))  # LIF charging
-        self.sp1 = y
+        if isinstance(self.prev_input, float):
+            self.prev_input = torch.zeros_like(x)
+            self.prev_spike = torch.zeros_like(x)
+            self.inhibition = torch.zeros_like(x)
+        current_input = x
+        self.inhibition = 0.03*(self.inhibition + self.prev_input * self.prev_spike)
+        self.neuronal_charge(x-torch.clamp(self.inhibition,min=0))  # LIF charging
+        self.prev_input = current_input
         spike = self.neuronal_fire()  # LIF fire
-        self.sp2 = spike
+        self.prev_spike = spike
         self.neuronal_reset(spike)  # LIF reset
-        self.vot = 1*(self.vot + spike * self.v)
-        self.v = self.v - spike * torch.sigmoid(self.vot)  # Reset
+        self.inhibitory_memory = 1*(self.inhibitory_memory + spike * self.v)
+        self.v = self.v - spike * torch.sigmoid(self.inhibitory_memory)  # Reset
         return spike
 
 
@@ -97,7 +95,7 @@ class ComplementaryLIFNeuron(LIFNode_sj):
 
 
 # spikingjelly multiple step version
-class MultiStepILIFNeuron(ComplementaryLIFNeuron):
+class MultiStepILIFNeuron(InhibitoryLIFNeuron):
     def __init__(self, tau: float = 2., decay_input: bool = False, v_threshold: float = 1.,
                  v_reset: float = None, surrogate_function: Callable = Rectangle(),
                  detach_reset: bool = False, cupy_fp32_inference=False, **kwargs):
@@ -141,7 +139,7 @@ class PLIFNeuron(PLIFNode_sj):
 if __name__ == '__main__':
     T = 8
     x_input = torch.rand((T, 3, 32, 32)) * 1.2
-    ilif = ComplementaryLIFNeuron()
+    ilif = InhibitoryLIFNeuron()
     ilif_m = MultiStepILIFNeuron()
 
     s_list = []

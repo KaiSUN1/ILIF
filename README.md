@@ -16,16 +16,16 @@ We use one single RTX4090D GPU for running all the experiments. Multi-GPU traini
 For training, please run the following example codes:
 
     # CIFAR10
-    python train_BPTT.py -data_dir ./data -dataset cifar10 -model spiking_resnet18 -T_max 200 -epochs 200 -weight_decay 5e-5 -neuron ILIF
+    python train.py -data_dir ./data -dataset cifar10 -model spiking_resnet18 -T_max 200 -epochs 200 -weight_decay 5e-5 -neuron ILIF
     
     # CIFAR100
-    python train_BPTT.py -data_dir ./data -dataset cifar100 -model spiking_resnet18 -T_max 200 -epochs 200 -neuron ILIF
+    python train.py -data_dir ./data -dataset cifar100 -model spiking_resnet18 -T_max 200 -epochs 200 -neuron ILIF
        
     # DVSCIFAR10
-    python train_BPTT.py -data_dir ./data -dataset DVSCIFAR10 -T 10 -drop_rate 0.3 -model spiking_vgg11_bn -lr=0.05 -mse_n_reg -neuron ILIF
+    python train.py -data_dir ./data -dataset DVSCIFAR10 -T 10 -drop_rate 0.3 -model spiking_vgg11_bn -lr=0.05 -mse_n_reg -neuron ILIF
     
     # DVSGesture
-    python train_BPTT.py -data_dir ./data -dataset dvsgesture -model spiking_vgg11_bn -T 20 -b 16 -drop_rate 0.4 -neuron ILIF
+    python train.py -data_dir ./data -dataset dvsgesture -model spiking_vgg11_bn -T 20 -b 16 -drop_rate 0.4 -neuron ILIF
 
 If you change the neuron, you can directly switch to ``LIF`` or ``PLIF`` by modifying the hyperparameters after ``-neuron``.
 

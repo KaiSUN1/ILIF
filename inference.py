@@ -271,7 +271,7 @@ def main():
     if args.neuron_model == 'LIF':
         neuron_model = neuron.BPTTNeuron
     elif args.neuron_model == 'ILIF':
-        neuron_model = neuron.ComplementaryLIFNeuron
+        neuron_model = neuron.InhibitoryLIFNeuron
     elif args.neuron_model == 'PLIF':
         neuron_model = neuron.PLIFNeuron
     elif args.neuron_model == 'relu':
@@ -304,28 +304,6 @@ def main():
 
     print('Total Parameters: %.2fM' % (sum(p.numel() for p in net.parameters()) / 1000000.0))
     net.cuda()
-    #
-    # ##########################################################
-    # # optimizer preparing
-    # ##########################################################
-    # if args.opt == 'SGD':
-    #     optimizer = torch.optim.SGD(net.parameters(), lr=args.lr, momentum=args.momentum,
-    #                                 weight_decay=args.weight_decay)
-    # elif args.opt == 'AdamW':
-    #     optimizer = torch.optim.AdamW(net.parameters(), lr=args.lr, weight_decay=args.weight_decay)
-    # else:
-    #     raise NotImplementedError(args.opt)
-    #
-    # if args.lr_scheduler == 'StepLR':
-    #     lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=args.step_size, gamma=args.gamma)
-    # elif args.lr_scheduler == 'CosALR':
-    #     lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.T_max)
-    # else:
-    #     raise NotImplementedError(args.lr_scheduler)
-    #
-    # scaler = None
-    # if args.amp:
-    #     scaler = amp.GradScaler()
 
     ##########################################################
     # loading models from checkpoint
@@ -337,8 +315,7 @@ def main():
         print('resuming...')
         checkpoint = torch.load(args.resume, map_location='cpu')
         net.load_state_dict(checkpoint['net'])
-        # optimizer.load_state_dict(checkpoint['optimizer'])
-        # lr_scheduler.load_state_dict(checkpoint['lr_scheduler'])
+
         start_epoch = checkpoint['epoch'] + 1
         max_test_acc = checkpoint['max_test_acc']
         print('start epoch:', start_epoch, ', max test acc:', max_test_acc)
@@ -358,12 +335,7 @@ def main():
     if args.neuron_model != 'LIF':
         out_dir += f'_{args.neuron_model}_'
 
-    # if args.lr_scheduler == 'CosALR':
-    #     out_dir += f'CosALR_{args.T_max}'
-    # elif args.lr_scheduler == 'StepLR':
-    #     out_dir += f'StepLR_{args.step_size}_{args.gamma}'
-    # else:
-    #     raise NotImplementedError(args.lr_scheduler)
+
 
     if args.amp:
         out_dir += '_amp'

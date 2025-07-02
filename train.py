@@ -268,7 +268,7 @@ def main():
     if args.neuron_model == 'LIF':
         neuron_model = neuron.BPTTNeuron
     elif args.neuron_model == 'ILIF':
-        neuron_model = neuron.ComplementaryLIFNeuron
+        neuron_model = neuron.InhibitoryLIFNeuron
     elif args.neuron_model == 'PLIF':
         neuron_model = neuron.PLIFNeuron
     elif args.neuron_model == 'relu':
