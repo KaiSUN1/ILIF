@@ -1,4 +1,4 @@
-# ILIF
+# ILIF: Temporal Inhibitory Leaky Integrate-and-Fire Neuron for Overactivation in Spiking Neural Networks
 
 The Leaky Integrate-and-Fire (LIF) model faces a dilemma in configuring the surrogate gradient support width, balancing between overactivation and gradient vanishing. This work proposes the Temporal Inhibitory Leaky Integrate-and-Fire (ILIF) Neuron, which incorporates inhibitory units connected across adjacent time steps to mitigate overactivation and ensure smooth gradient propagation.
 
